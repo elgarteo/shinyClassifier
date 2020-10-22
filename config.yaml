@@ -1,0 +1,29 @@
+---
+title: Test #project name, goes to dashboard title
+user:
+  - user: admin
+    password: admin
+    admin: true
+  - user: test
+    password: test
+    admin: false
+type: image #text or image
+question:
+  - text: Is there a human? #what the user sees
+    value: human #name of question, should be the same with the column name in csv
+    choice:
+      - name: "Yes" #what the user sees
+        value: 1 #value to be recorded
+      - name: "No"
+        value: 0
+  - text: If there is, what is the gender?
+    value: gender
+    choice:
+      - name: Not Applicable
+        value: NA
+      - name: Male
+        value: M
+      - name: Female
+        value: F
+skin: blue #shinydashboard skin
+...

@@ -1,0 +1,44 @@
+/* remove border */
+  .container-fluid {
+    padding: 0;
+  }
+h2 {
+  margin: 0;
+}
+/* define max image width */
+@media (max-width:1000px) {
+  img {
+    max-width: 80%;
+  }
+}
+@media (min-width:1000px) {
+  img {
+    max-width: 500px;
+    max-height: 500px;
+  }
+}
+/* */
+hr {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+.username {
+  padding-top: 15px; 
+  padding-bottom: 15px; 
+  color: #fff;
+  font-weight: bold;
+}
+.nav {
+  display: inline-block;
+  vertical-align: middle;
+}
+.selectize-input {
+  text-align: left;
+}
+.media-content {
+  max-width: 100%;
+  max-height: 500px;
+}
+#questions {
+  text-align: center;
+}

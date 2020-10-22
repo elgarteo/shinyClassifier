@@ -31,4 +31,4 @@ ui <- fluidPage(
   dashboardPage(header, sidebar, body, skin = skin)
 )
 
-ui <- secure_app(ui, enable_admin = TRUE)
+secure_app(ui, enable_admin = TRUE)

@@ -1,7 +1,7 @@
 /* remove border */
-  .container-fluid {
-    padding: 0;
-  }
+.container-fluid {
+  padding: 0;
+}
 h2 {
   margin: 0;
 }
@@ -32,8 +32,9 @@ hr {
   display: inline-block;
   vertical-align: middle;
 }
-.selectize-input {
-  text-align: left;
+.table-thumbnail {
+  max-width: 100px;
+  max-height: 100px;
 }
 .media-content {
   max-width: 100%;

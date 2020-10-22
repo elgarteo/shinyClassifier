@@ -9,7 +9,7 @@ library(shinymanager)
   })
   create_db(
     credentials_data = credentials,
-    sqlite_path = "user.sqlite", # will be created
+    sqlite_path = "user.sqlite",
   )
 }
 # Function to save config
@@ -65,7 +65,7 @@ prep_data <- function(file = "data.csv", dist = TRUE) {
       saveRDS(cbind(result[idx, ], tmp), paste0("data_", u, ".rds"), compress = FALSE)
     }
   } else {
-    # distribute same data for each user for reliability test
+    # distribute same data for every user for reliability test
     for (x in non_admin$user) {
       tmp <- data.frame(user = rep(x, nrow(data)))
       saveRDS(cbind(result, tmp), paste0("data_", x, ".rds"), compress = FALSE)

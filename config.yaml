@@ -1,5 +1,6 @@
 ---
-title: Test #project name, goes to dashboard title
+title: Cat Classification #project name, goes to dashboard title
+skin: blue #shinydashboard skin
 user:
   - user: admin
     password: admin
@@ -9,21 +10,26 @@ user:
     admin: false
 type: image #text or image
 question:
-  - text: Is there a human? #what the user sees
-    value: human #name of question, should be the same with the column name in csv
+  - text: Is there a cat? #what the user sees
+    value: cat #name of question, will become the column name in the classification results
     choice:
       - name: "Yes" #what the user sees
         value: 1 #value to be recorded
       - name: "No"
         value: 0
-  - text: If there is, what is the gender?
-    value: gender
+  - text: If there is, what is its colour?
+    value: color
     choice:
       - name: Not Applicable
         value: NA
-      - name: Male
-        value: M
-      - name: Female
-        value: F
-skin: blue #shinydashboard skin
+      - name: Black
+        value: black
+      - name: Cinnamon
+        value: cinnamon
+      - name: Orange
+        value: orange
+      - name: Gray
+        value: gray
+      - name: Black
+        value: black
 ...

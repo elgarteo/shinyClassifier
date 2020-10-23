@@ -16,11 +16,17 @@ header <- dashboardHeader(
 sidebar <- dashboardSidebar(disable = TRUE)
 body <- dashboardBody(
   tags$link(rel = "stylesheet", type = "text/css", href = "styles.css"),
+  # monitor enter key press
+  tags$script('$(document).on("keyup", function(e) {
+  if(e.keyCode == 13){
+    Shiny.onInputChange("enterkey", Math.random());
+  }
+  });'),
   fluidRow(
     # navigation
     uiOutput("nav"),
     # media
-    box(uiOutput("data"), width = 12),
+    uiOutput("data"),
     # questions
     tags$div(id = "questions")
   )
@@ -28,6 +34,7 @@ body <- dashboardBody(
 
 ui <- fluidPage(
   useShinyjs(),
+  tags$head(tags$link(rel = "shortcut icon", href = "favicon.ico")),
   dashboardPage(header, sidebar, body, skin = skin)
 )
 

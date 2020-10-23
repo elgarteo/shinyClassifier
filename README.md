@@ -141,7 +141,10 @@ by `shinymanager`.
 
 The classification results of each user are stored in their respective
 `data_<username>.rds` files. You can also download the data in CSV format
-in the admin console. Unclassified entries are marked as `NA`. 
+in the admin console. Unclassified entries are marked as `NA` in the data and 
+shown as empty cells in the admin console. If you’re hosting this app on your
+own Shiny Server, make sure Shiny has the permission to write into the 
+directory.
 
 In addition to the defined questions, a check box is presented in every
 entry for the users to mark any potentially disputable case. Entries marked

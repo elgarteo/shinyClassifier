@@ -41,18 +41,10 @@ function(session, input, output) {
         # draw navigation bar
         output$nav <- renderUI({
           box(
-            column(
-              tags$div(class = "nav", actionButton("go_prev", "< Previous", class = "btn-sm")),
-              width = 4
-            ),
-            column(
-              tags$div(class = "nav", textOutput("progress")),
-              width = 4, align = "center"
-            ),
-            column(
-              tags$div(class = "nav", actionButton("go_next", "Next >", class = "btn-sm")),
-              width = 4, align = "right"
-            ),
+            class = "nav-box",
+            tags$div(class = "col-xs-4 nav-bar text-left", actionButton("go_prev", "< Previous", class = "btn-sm", width = "80px")),
+            tags$div(class = "col-xs-4 nav-bar text-center", textOutput("progress")),
+            tags$div(class = "col-xs-4 nav-bar text-right", actionButton("go_next", "Next >", class = "btn-sm", width = "80px")),
             width = 12
           )
         })
@@ -72,12 +64,13 @@ function(session, input, output) {
         # draw content
         output$data <- renderUI({
           if (type == "image") {
-            div(
-              a(
-                href = data$data[session_info$current], target = "_blank", 
-                img(class = "media-content", src = data$data[session_info$current])
-              ), 
-              style = "text-align: center;"
+            box(
+              div(
+                a(href = data$data[session_info$current], target = "_blank", 
+                  img(class = "media-content", src = data$data[session_info$current])
+                ),
+                style = "text-align: center;"
+              ), width = 6
             )
           } else if (type == "text") {
             div(data$data[session_info$current])
@@ -85,7 +78,7 @@ function(session, input, output) {
         })
         # draw questions
         observeEvent(session_info$current, {
-          removeUI(selector = "#questions > .col-sm-12", multiple = TRUE)
+          removeUI(selector = "#questions > .col-sm-6", multiple = TRUE)
           ui <- map(questions, function(x) {
             selected <- data[[x$value]][session_info$current]
             radioButtons(inputId = x$value, label = x$text, choices = x$choice, 
@@ -94,10 +87,10 @@ function(session, input, output) {
           insertUI(
             selector = "#questions",
             ui = box(
-              ui,
+              ui, hr(),
               checkboxInput("problem", "Mark as problematic", value = data[["problem"]][session_info$current]),
               actionButton("submit", "Submit"),
-              width = 12
+              width = 6
             )
           )
         })
@@ -130,6 +123,10 @@ function(session, input, output) {
             ))
           }
         })
+        # monitor key press
+        observeEvent(input$enterkey, {
+          click("submit")
+        })
       } else {
         # No data file found for user
         showModal(modalDialog(
@@ -154,7 +151,10 @@ function(session, input, output) {
       })
       # draw result table
       output$data <- renderUI({
-        dataTableOutput("result")
+        box(
+          dataTableOutput("result"),
+          width = 12
+        )
       })
       observeEvent(input$user, {
         removeUI(selector = "#questions > .col-sm-12", multiple = TRUE)

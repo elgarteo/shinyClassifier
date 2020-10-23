@@ -8,13 +8,14 @@ h2 {
 /* define max image width */
 @media (max-width:1000px) {
   img {
-    max-width: 80%;
+    max-width: 100%;
+    max-height: 300px;
   }
 }
 @media (min-width:1000px) {
   img {
-    max-width: 500px;
-    max-height: 500px;
+    max-width: 100%;
+    max-height: 800px;
   }
 }
 /* */
@@ -28,7 +29,11 @@ hr {
   color: #fff;
   font-weight: bold;
 }
-.nav {
+.nav-box {
+  display: flex;
+  align-items: center;
+}
+.nav-bar {
   display: inline-block;
   vertical-align: middle;
 }
@@ -39,6 +44,9 @@ hr {
 .media-content {
   max-width: 100%;
   max-height: 500px;
+}
+.selectize-input {
+  text-align: left;
 }
 #questions {
   text-align: center;

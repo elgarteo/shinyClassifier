@@ -140,7 +140,7 @@ on the bottom right to access the _Administrator mode_ powered
 by `shinymanager`.
 
 The classification results of each user are stored in their respective
-`data_<username>.rds` files, while you can also download the data in CSV format
+`data_<username>.rds` files. You can also download the data in CSV format
 in the admin console. Unclassified entries are marked as `NA`. 
 
 In addition to the defined questions, a check box is presented in every

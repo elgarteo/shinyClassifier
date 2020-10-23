@@ -111,7 +111,7 @@ function(session, input, output) {
           data[["problem"]][session_info$current] <<- input[["problem"]]
           # save
           saveRDS(data, paste0("data_", res_auth$user, ".rds"), compress = FALSE)
-          # to next
+          # to next item
           if (session_info$current != nrow(data)) {
             session_info$current <- session_info$current + 1
           } else if (all(map_lgl(questions, function(x) !any(is.na(data[[x$value]]))))) {
@@ -156,41 +156,56 @@ function(session, input, output) {
       output$data <- renderUI({
         dataTableOutput("result")
       })
-      output$result <- renderDataTable({
-        data <- readRDS(paste0("data_", input$user, ".rds"))
-        if (type == "image")
-          data$data <- paste0("<a href='", data$data, "' target='_blank'><img src='",
-                              data$data, "' class='table-thumbnail'/></a>")
-        datatable(data, rownames = FALSE, escape = FALSE,
-                  selection = list(mode = "single"), style = "bootstrap",
-                  options = list(orderClasses = TRUE))
-      })
-      # download button
-      insertUI(
-        selector = "#questions",
-        ui = box(
-          downloadButton("export_all", "Download all data"),
-          downloadButton("export_user", "Download user data"),
-          width = 12
-        )
-      )
-      output$export_all <- downloadHandler(
-        filename = paste0("data_", format(Sys.time(), "%Y%m%d_%H%M"), ".csv"),
-        content = function(file) {
-          files <- list.files(pattern = "data_")
-          data <- map_dfr(files, function(x) {
-            readRDS(x)
+      observeEvent(input$user, {
+        removeUI(selector = "#questions > .col-sm-12", multiple = TRUE)
+        data_file <- paste0("data_", input$user, ".rds")
+        if (file.exists(data_file)) {
+          # render table
+          output$result <- renderDataTable({
+            data <- readRDS(data_file)
+            if (type == "image")
+              data$data <- paste0("<a href='", data$data, "' target='_blank'><img src='",
+                                  data$data, "' class='table-thumbnail'/></a>")
+            datatable(data, rownames = FALSE, escape = FALSE,
+                      selection = list(mode = "single"), style = "bootstrap",
+                      options = list(orderClasses = TRUE))
           })
-          write.csv(data, file, row.names = FALSE)
+          # download buttons
+          insertUI(
+            selector = "#questions",
+            ui = box(
+              downloadButton("export_all", "Download all data"),
+              downloadButton("export_user", "Download user data"),
+              width = 12
+            )
+          )
+          output$export_all <- downloadHandler(
+            filename = paste0("data_", format(Sys.time(), "%Y%m%d_%H%M"), ".csv"),
+            content = function(file) {
+              files <- list.files(pattern = "data_")
+              data <- map_dfr(files, function(x) {
+                readRDS(x)
+              })
+              write.csv(data, file, row.names = FALSE)
+            }
+          )
+          output$export_user <- downloadHandler(
+            filename = paste0("data_", input$user, "_", format(Sys.time(), "%Y%m%d_%H%M"), ".csv"),
+            content = function(file) {
+              data <- readRDS(paste0("data_", input$user, ".rds"))
+              write.csv(data, file, row.names = FALSE)
+            }
+          )
+        } else {
+          # No data file found for user
+          showModal(modalDialog(
+            title = "Warning",
+            "No task has been assigned to this user.",
+            easyClose = TRUE, footer = NULL
+          ))
+          output$result <- renderDataTable({})
         }
-      )
-      output$export_user <- downloadHandler(
-        filename = paste0("data_", input$user, "_", format(Sys.time(), "%Y%m%d_%H%M"), ".csv"),
-        content = function(file) {
-          data <- readRDS(paste0("data_", input$user, ".rds"))
-          write.csv(data, file, row.names = FALSE)
-        }
-      )
+      })
     }
   }, ignoreNULL = TRUE)
 }

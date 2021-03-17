@@ -27,13 +27,12 @@ library(shinymanager)
 }
 # Function to generate javascript for detecting key press
 .generate_js <- function(config) {
-  js <- c()
   # short cut keys for choice selection
   choice <- map(config$question, function(x) {
     map_chr(x$choice, function(y) {
       if ("keycode" %in% names(y)) {
         sprintf(
-          "if (e.keyCode == %d) {\n Shiny.onInputChange(\'choiceKey\', [\'%s\', \'%s\']);\n}", 
+          "if (e.keyCode == %d) {\n Shiny.onInputChange('choiceKey', ['%s', '%s']);\n}", 
           y$keycode, x$value, y$value
         )
       } else {
@@ -53,9 +52,8 @@ library(shinymanager)
       )
     })
   } else {
-    general <- NA
+    general <- c()
   }
-  general <- general[!is.na(general)]
   # merge and generate js file
   js <- c(choice, general)
   if (length(js)) {

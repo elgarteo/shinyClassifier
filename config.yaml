@@ -1,5 +1,5 @@
 ---
-title: Cat Classification #project name, goes to dashboard title
+title: Cat Classification #project name, serve as dashboard title
 skin: blue #shinydashboard skin
 user:
   - user: admin
@@ -15,7 +15,7 @@ question:
     choice:
       - name: "Yes" #what the user sees
         value: 1 #value to be recorded
-        keycode: 89 #shortcut key for quick selection, in javascript keycode
+        keycode: 89 #shortcut key for quick selection, in JavaScript key code (optional)
       - name: "No"
         value: 0
         keycode: 78
@@ -37,12 +37,12 @@ question:
       - name: Gray
         value: gray
         keycode: 52
-#short cut keys for navigation
+#shortcut keys for navigation (optional)
 shortcut: 
   - action: submit #submit
-    keycode: 13 #javascript keycode for enter key
+    keycode: 13 #enter
   - action: prev #previous entry
-    keycode: 37 #javascript keycode for left arrow
+    keycode: 37 #left arrow
   - action: next #next entry
-    keycode: 39 #javascript keycode for right arrow
+    keycode: 39 #right arrow
 ...

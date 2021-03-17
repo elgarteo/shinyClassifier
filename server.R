@@ -24,7 +24,7 @@ function(session, input, output) {
     load("config.rda")
     # body
     if (res_auth$admin == "FALSE") {
-      # ordinary users
+      ##----- interface for ordinary user -----
       data_file <- paste0("data_", res_auth$user, ".rds")
       if (file.exists(data_file)) {
         data <- readRDS(data_file)
@@ -42,9 +42,11 @@ function(session, input, output) {
         output$nav <- renderUI({
           box(
             class = "nav-box",
-            tags$div(class = "col-xs-4 nav-bar text-left", actionButton("go_prev", "< Previous", class = "btn-sm", width = "80px")),
+            tags$div(class = "col-xs-4 nav-bar text-left", 
+                     actionButton("go_prev", "< Previous", class = "btn-sm", width = "80px")),
             tags$div(class = "col-xs-4 nav-bar text-center", textOutput("progress")),
-            tags$div(class = "col-xs-4 nav-bar text-right", actionButton("go_next", "Next >", class = "btn-sm", width = "80px")),
+            tags$div(class = "col-xs-4 nav-bar text-right", 
+                     actionButton("go_next", "Next >", class = "btn-sm", width = "80px")),
             width = 12
           )
         })
@@ -73,7 +75,9 @@ function(session, input, output) {
               ), width = 6
             )
           } else if (type == "text") {
-            div(data$data[session_info$current])
+            box(
+              div(data$data[session_info$current])
+            )
           }
         })
         # draw questions
@@ -124,8 +128,17 @@ function(session, input, output) {
           }
         })
         # monitor key press
-        observeEvent(input$enterkey, {
+        observeEvent(input$submitKey, {
           click("submit")
+        })
+        observeEvent(input$prevKey, {
+          click("go_prev")
+        })
+        observeEvent(input$nextKey, {
+          click("go_next")
+        })
+        observeEvent(input$choiceKey, {
+          updateRadioButtons(session, input$choiceKey[1], selected = input$choiceKey[2])
         })
       } else {
         # No data file found for user
@@ -136,7 +149,7 @@ function(session, input, output) {
         ))
       }
     } else if (res_auth$admin == "TRUE") {
-      # admin user
+      ##----- interface for admin user -----
       users <- read_db_decrypt("user.sqlite")
       non_admin <- users$user[users$admin == "FALSE"]
       # draw navigation bar

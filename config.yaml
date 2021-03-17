@@ -15,21 +15,34 @@ question:
     choice:
       - name: "Yes" #what the user sees
         value: 1 #value to be recorded
+        keycode: 89 #shortcut key for quick selection, in javascript keycode
       - name: "No"
         value: 0
+        keycode: 78
   - text: If there is, what is its colour?
     value: color
     choice:
       - name: Not Applicable
         value: NA
+        keycode: 48
       - name: Black
         value: black
+        keycode: 49
       - name: Cinnamon
         value: cinnamon
+        keycode: 50
       - name: Orange
         value: orange
+        keycode: 51
       - name: Gray
         value: gray
-      - name: Black
-        value: black
+        keycode: 52
+#short cut keys for navigation
+shortcut: 
+  - action: submit #submit
+    keycode: 13 #javascript keycode for enter key
+  - action: prev #previous entry
+    keycode: 37 #javascript keycode for left arrow
+  - action: next #next entry
+    keycode: 39 #javascript keycode for right arrow
 ...

@@ -16,12 +16,7 @@ header <- dashboardHeader(
 sidebar <- dashboardSidebar(disable = TRUE)
 body <- dashboardBody(
   tags$link(rel = "stylesheet", type = "text/css", href = "styles.css"),
-  # monitor enter key press
-  tags$script('$(document).on("keyup", function(e) {
-  if(e.keyCode == 13){
-    Shiny.onInputChange("enterkey", Math.random());
-  }
-  });'),
+  tags$script(src = "shortcut.js"),
   fluidRow(
     # navigation
     uiOutput("nav"),

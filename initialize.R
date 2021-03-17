@@ -25,10 +25,52 @@ library(shinymanager)
   skin <- config$skin
   save(title, questions, type, skin, file = "config.rda", compress = FALSE)
 }
+# Function to generate javascript for detecting key press
+.generate_js <- function(config) {
+  js <- c()
+  # short cut keys for choice selection
+  choice <- map(config$question, function(x) {
+    map_chr(x$choice, function(y) {
+      if ("keycode" %in% names(y)) {
+        sprintf(
+          "if (e.keyCode == %d) {\n Shiny.onInputChange(\'choiceKey\', [\'%s\', \'%s\']);\n}", 
+          y$keycode, x$value, y$value
+        )
+      } else {
+        NA
+      }
+    })
+  })
+  choice <- unlist(choice)
+  choice <- choice[!is.na(choice)]
+  # navigation short cut keys
+  if ("shortcut" %in% names(config)) {
+    general <- map_chr(config$shortcut, function(x) {
+      sprintf(
+        "if (e.keyCode == %d) {\n Shiny.onInputChange('%s', Math.random());\n}", 
+        x$keycode, ifelse(x$action == "submit", "submitKey", 
+                          ifelse(x$action == "prev", "prevKey", "nextKey"))
+      )
+    })
+  } else {
+    general <- NA
+  }
+  general <- general[!is.na(general)]
+  # merge and generate js file
+  js <- c(choice, general)
+  if (length(js)) {
+    js <- paste0(js, collapse = " else ")
+    js <- paste0("$(document).on('keyup', function(e) {\n", js, "});")
+    writeLines(js, "www/shortcut.js")
+  } else {
+    writeLines("", "www/shortcut.js")
+  }
+}
 # Function to read config.yaml and initialize app
-initilize_app <- function(file = "config.yaml") {
+initialize_app <- function(file = "config.yaml") {
   config <- read_yaml(file)
   .create_users(config)
+  .generate_js(config)
   .create_config(config)
 }
 # Function to prepare data

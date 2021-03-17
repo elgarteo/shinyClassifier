@@ -2,15 +2,14 @@
 
 This Shiny app is a multi-user image/text classification tool designed 
 for any scenario that involves a bunch of human coders classifying a bunch of 
-text or images. All it takes is a YAML config file and a CSV file to set up
-an online multi-user classification system.
+text or images into pre-specified categories. All it takes is a YAML config file
+and a CSV file to set up an online multi-user classification system.
 
 ## Prerequisite
 
 If you are deploying this dashboard on your own Shiny Server, please
 make sure the following packages are installed:
 
--   `shiny` _(obviously)_
 -   `shinydashboard`
 -   `shinyjs`
 -   `shinymanager`
@@ -79,13 +78,42 @@ question:
         value: orange
       - name: Gray
         value: gray
-      - name: Black
-        value: black
 ```
 
 The `text` and `name` entries are what the users will see in the
 interface. The `value` entries are the variable names of your data. The usual
-variable naming conventions for R apply.
+variable naming conventions for R apply. You can also specify JavaScript key code
+of the short cut key for quick selection in the `keycode` entry for each choice.
+In the example above, the box for Gray will be checked if the user presses the
+`4` key on the keyboard. 
+
+You can specify the shortcut keys for each choice of the questions and for 
+navigation purpose as follow:
+
+```yaml
+question:
+  - text: Is there a cat?
+    value: cat
+    choice:
+      - name: "Yes"
+        value: 1
+        keycode: 89
+      - name: "No"
+        value: 0
+        keycode: 78
+...
+shortcut: 
+  - action: submit
+    keycode: 13
+  - action: prev
+    keycode: 37
+  - action: next
+    keycode: 39
+```
+
+The `keycode` entry accepts JavaScript key code. In the example above, pressing
+the `Y` key on the keyboard will check the choice "Yes", and pressing the `Enter`
+key will submit the checked answers.
 
 ### `data.csv`
 
@@ -151,5 +179,7 @@ entry for the users to mark any potentially disputable case. Entries marked
 as such will have the column `problem` defined as `TRUE` in the classification
 results.
 
-This application is not designed to handle for simultaneous login of the same 
+## Warning
+
+This application is not designed to handle simultaneous login of the <u>same</u> 
 user. Doing so may result in data loss.

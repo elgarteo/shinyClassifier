@@ -32,7 +32,7 @@ library(shinymanager)
     map_chr(x$choice, function(y) {
       if ("keycode" %in% names(y)) {
         sprintf(
-          "if (e.keyCode == %d) {\n Shiny.onInputChange('choiceKey', ['%s', '%s']);\n}", 
+          "if (e.keyCode == %d) {\n Shiny.onInputChange('choiceKey', ['%s', '%s', Math.random()]);\n}", 
           y$keycode, x$value, y$value
         )
       } else {

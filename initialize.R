@@ -16,12 +16,24 @@ library(shinymanager)
 .create_config <- function(config) {
   title <- config$title
   questions <- map(config$question, function(x) {
+    if (x$value %in% c("problem", "user", "completed")) {
+      stop("Column name `", x$value, "` is a reserved word")
+    }
+    if (is.null(x$type)) {
+      stop("Missing type parameter for question `", x$value, "`")
+    }
     choice <- map_chr(x$choice, function(y) y$value)
     choice <- setNames(choice, map_chr(x$choice, function(y) y$name))
     x$choice <- choice
     x
   })
+  if (any(duplicated(map_chr(questions, function(x) x$value)))) {
+    stop("Duplicated question value(s) detected")
+  }
   type <- config$type
+  if (!type %in% c("image", "text")) {
+    stop("Invalid type `", type, "`")
+  }
   skin <- config$skin
   save(title, questions, type, skin, file = "config.rda", compress = FALSE)
 }
@@ -32,8 +44,8 @@ library(shinymanager)
     map_chr(x$choice, function(y) {
       if ("keycode" %in% names(y)) {
         sprintf(
-          "if (e.keyCode == %d) {\n Shiny.onInputChange('choiceKey', ['%s', '%s', Math.random()]);\n}", 
-          y$keycode, x$value, y$value
+          "if (e.keyCode == %d) {\n Shiny.onInputChange('choiceKey', ['%s', '%s', '%s', '%s', Math.random()]);\n}", 
+          y$keycode, x$value, y$value, x$type, ifelse(is.null(x$multiple), FALSE, x$multiple)
         )
       } else {
         NA
@@ -79,14 +91,12 @@ prep_data <- function(file = "data.csv", dist = TRUE) {
   users <- read_db_decrypt("user.sqlite")
   non_admin <- users[users$admin == "FALSE", ]
   # add choice columns
-  result <- map_dfc(questions, function(x) {
-    tmp <- data.frame(choice = rep(NA, nrow(data)))
-    names(tmp) <- x$value
-    tmp
-  })
+  result <- as.data.frame(matrix(NA, norw(data), length(questions)))
+  names(result) <- map_chr(questions, function(x) x$value)
   result <- cbind(data, result)
-  # add problem column
-  result <- cbind(result, data.frame(problem = rep(FALSE, nrow(data))))
+  # add problem & completed columns
+  result$problem <- NA
+  result$completed <- FALSE
   if (dist) {
     # randomly assign data for each user
     pool <- 1:nrow(result)

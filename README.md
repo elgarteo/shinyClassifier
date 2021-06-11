@@ -52,14 +52,15 @@ passwords in the config file and then change them in the admin console later,
 where you can also force users to change their passwords upon the first log
 in.
 
-This app supports the presentation of multiple mutually exclusive questions 
-on the same content. Say your goal is to sort out cat images, and if so what is
-the colour of the cat. You can then specify the questions as follows:
+This app supports the presentation of multiple questions on the same content. 
+Say your goal is to sort out cat images, and if so what is the colour(s) of 
+the cat. You can then specify these questions as follows:
 
 ``` yaml
 question:
   - text: Is there a cat?
     value: cat
+    type: radio
     choice:
       - name: "Yes"
         value: 1
@@ -67,6 +68,8 @@ question:
         value: 0
   - text: If there is, what is its colour?
     value: color
+    type: selectize
+    multiple: true
     choice:
       - name: Not Applicable
         value: NA
@@ -81,11 +84,17 @@ question:
 ```
 
 The `text` and `name` entries are what the users will see in the
-interface. The `value` entries are the variable names of your data. The usual
-variable naming conventions for R apply. You can also specify JavaScript key code
-of the short cut key for quick selection in the `keycode` entry for each choice.
-In the example above, the box for Gray will be checked if the user presses the
-`4` key on the keyboard. 
+interface. The `value` entry is the variable name of your data. The usual
+variable naming conventions for R apply. The `type` entry specifies what control
+element to be implemented for that question, which can be `radio`, `checkbox` or
+`selectize`. `radio` is suitable for questions with only one choice, while
+`checkbox` accepts selection of multiple choices. `selectize` supports both,
+though by default it only takes one choice. Set `multiple: true` to enable
+multiple selection for `selectize`.
+
+You can also specify JavaScript key code of the short cut key for quick 
+selection in the `keycode` entry for each choice. In the example above, the box 
+for Gray will be checked if the user presses the `4` key on the keyboard. 
 
 You can specify the shortcut keys for each choice of the questions and for 
 navigation purpose as follow:
@@ -94,6 +103,7 @@ navigation purpose as follow:
 question:
   - text: Is there a cat?
     value: cat
+    type: radio
     choice:
       - name: "Yes"
         value: 1
@@ -112,8 +122,8 @@ shortcut:
 ```
 
 The `keycode` entry accepts JavaScript key code. In the example above, pressing
-the `Y` key on the keyboard will check the choice "Yes", and pressing the `Enter`
-key will submit the checked answers.
+the `Y` key on the keyboard will check the choice "Yes", and pressing the 
+`Enter` key will submit the checked answers.
 
 ### `data.csv`
 

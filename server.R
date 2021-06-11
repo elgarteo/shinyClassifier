@@ -29,24 +29,30 @@ function(session, input, output) {
       if (file.exists(data_file)) {
         data <- readRDS(data_file)
         # find out which content to load first
-        session_info$current <- map_int(questions, function(x) {
-          tmp <- data[[x$value]]
-          # return last content if all finished
-          if (!any(is.na(tmp)))
-            return(length(tmp))
-          # return first unfinished content by default
-          which(is.na(tmp))[1]
-        }) %>%
-          min(.)
+        session_info$current <- ifelse(
+          any(which(data$completed)), min(any(which(data$completed))), 1
+        )
         # draw navigation bar
         output$nav <- renderUI({
+          if (session_info$current > 1) {
+            prev_btn <- tags$div(class = "col-xs-4 nav-bar text-left", 
+                                 actionButton("go_prev", "< Previous", class = "btn-sm", width = "80px"))
+          } else {
+            prev_btn <- tags$div(class = "col-xs-4 nav-bar text-left", 
+                                 disabled(actionButton("go_prev", "< Previous", class = "btn-sm", width = "80px")))
+          }
+          if (session_info$current < nrow(data)) {
+            next_btn <- tags$div(class = "col-xs-4 nav-bar text-right", 
+                                 actionButton("go_next", "Next >", class = "btn-sm", width = "80px"))
+          } else {
+            next_btn <- tags$div(class = "col-xs-4 nav-bar text-right", 
+                                 disabled(actionButton("go_next", "Next >", class = "btn-sm", width = "80px"))) 
+          }
           box(
             class = "nav-box",
-            tags$div(class = "col-xs-4 nav-bar text-left", 
-                     actionButton("go_prev", "< Previous", class = "btn-sm", width = "80px")),
+            prev_btn,
             tags$div(class = "col-xs-4 nav-bar text-center", textOutput("progress")),
-            tags$div(class = "col-xs-4 nav-bar text-right", 
-                     actionButton("go_next", "Next >", class = "btn-sm", width = "80px")),
+            next_btn,
             width = 12
           )
         })
@@ -58,10 +64,6 @@ function(session, input, output) {
         })
         observeEvent(input$go_next, {
           session_info$current <- session_info$current + 1
-        })
-        observeEvent(session_info$current, {
-          toggleState("go_prev", condition = session_info$current > 1)
-          toggleState("go_next", condition = session_info$current < nrow(data))
         })
         # draw content
         output$data <- renderUI({
@@ -84,15 +86,26 @@ function(session, input, output) {
         observeEvent(session_info$current, {
           removeUI(selector = "#questions > .col-sm-6", multiple = TRUE)
           ui <- map(questions, function(x) {
-            selected <- data[[x$value]][session_info$current]
-            radioButtons(inputId = x$value, label = x$text, choices = x$choice, 
-                         selected = ifelse(is.na(selected), x$choice[1], selected))
+            selected <- data[[x$value]][[session_info$current]]
+            if (x$type == "checkbox") {
+              checkboxGroupInput(inputId = x$value, label = x$text, choices = x$choice, inline = TRUE,
+                                 selected = ifelse(is.na(selected), x$choice[1], selected))
+            } else if (x$type == "radio") {
+              radioButtons(inputId = x$value, label = x$text, choices = x$choice, inline = TRUE,
+                           selected = ifelse(is.na(selected), x$choice[1], selected))
+            } else if (x$type == "selectize") {
+              selectInput(inputId = x$value, label = x$text, choices = x$choice, 
+                          selected = ifelse(is.na(selected), x$choice[1], selected),
+                          multiple = ifelse(is.null(x$multiple), FALSE, x$multiple))
+            }
           })
           insertUI(
             selector = "#questions",
             ui = box(
               ui, hr(),
-              checkboxInput("problem", "Mark as problematic", value = data[["problem"]][session_info$current]),
+              checkboxInput("problem", "Mark as problematic", 
+                            value = ifelse(is.na(data$problem[session_info$current]), 
+                                           FALSE, data$problem[session_info$current])),
               actionButton("submit", "Submit"),
               width = 6
             )
@@ -100,9 +113,17 @@ function(session, input, output) {
         })
         # submit behaviour
         observeEvent(input$submit, {
-          # log choices
+          # log choices and mark completed
           for (x in questions) {
-            data[[x$value]][session_info$current] <<- input[[x$value]]
+            ans <- input[[x$value]]
+            if (length(ans) == 0) {
+              data[[x$value]][session_info$current] <<- NA
+            } else if (length(ans) == 1) {
+              data[[x$value]][session_info$current] <<- ans
+            } else {
+              data[[x$value]][session_info$current] <<- I(list(ans))
+            }
+            data$completed[session_info$current] <<- TRUE
           }
           # log problem flag
           data[["problem"]][session_info$current] <<- input[["problem"]]
@@ -138,7 +159,19 @@ function(session, input, output) {
           click("go_next")
         })
         observeEvent(input$choiceKey, {
-          updateRadioButtons(session, input$choiceKey[1], selected = input$choiceKey[2])
+          if (input$choiceKey[3] == "radio") {
+            updateRadioButtons(session, input$choiceKey[1], selected = input$choiceKey[2])
+          } else if (input$choiceKey[3] == "checkbox") {
+            to_select <- c(input[[input$choiceKey[1]]], input$choiceKey[2])
+            updateCheckboxGroupInput(session, input$choiceKey[1], selected = to_select)
+          } else if (input$choiceKey[3] == "selectize") {
+            if (input$choiceKey[4] == "TRUE") {
+              to_select <- c(input[[input$choiceKey[1]]], input$choiceKey[2])
+              updateSelectizeInput(session, input$choiceKey[1], selected = to_select)
+            } else {
+              updateSelectizeInput(session, input$choiceKey[1], selected = input$choiceKey[2])
+            }
+          }
         })
       } else {
         # No data file found for user
@@ -184,31 +217,44 @@ function(session, input, output) {
                       options = list(orderClasses = TRUE))
           })
           # download buttons
-          insertUI(
-            selector = "#questions",
-            ui = box(
-              downloadButton("export_all", "Download all data"),
-              downloadButton("export_user", "Download user data"),
-              width = 12
+          if (any(map_lgl(data, is.list))) {
+            # refuse to draw download button if data is nested
+            insertUI(
+              selector = "#questions",
+              ui = box(
+                p("The data is nested as there exists at least one question allowing selection of multiple answers.
+                  Nested data cannot be exported as CSV. Please retrieve the RDS files from backend instead."),
+                width = 12
+              )
             )
-          )
-          output$export_all <- downloadHandler(
-            filename = paste0("data_", format(Sys.time(), "%Y%m%d_%H%M"), ".csv"),
-            content = function(file) {
-              files <- list.files(pattern = "data_")
-              data <- map_dfr(files, function(x) {
-                readRDS(x)
-              })
-              write.csv(data, file, row.names = FALSE)
-            }
-          )
-          output$export_user <- downloadHandler(
-            filename = paste0("data_", input$user, "_", format(Sys.time(), "%Y%m%d_%H%M"), ".csv"),
-            content = function(file) {
-              data <- readRDS(paste0("data_", input$user, ".rds"))
-              write.csv(data, file, row.names = FALSE)
-            }
-          )
+          } else {
+            # draw download buttons if data not nested
+            insertUI(
+              selector = "#questions",
+              ui = box(
+                downloadButton("export_all", "Download all data"),
+                downloadButton("export_user", "Download user data"),
+                width = 12
+              )
+            )
+            output$export_all <- downloadHandler(
+              filename = paste0("data_", format(Sys.time(), "%Y%m%d_%H%M"), ".csv"),
+              content = function(file) {
+                files <- list.files(pattern = "data_")
+                data <- map_dfr(files, function(x) {
+                  readRDS(x)
+                })
+                write.csv(data, file, row.names = FALSE)
+              }
+            )
+            output$export_user <- downloadHandler(
+              filename = paste0("data_", input$user, "_", format(Sys.time(), "%Y%m%d_%H%M"), ".csv"),
+              content = function(file) {
+                data <- readRDS(paste0("data_", input$user, ".rds"))
+                write.csv(data, file, row.names = FALSE)
+              }
+            )
+          }
         } else {
           # No data file found for user
           showModal(modalDialog(

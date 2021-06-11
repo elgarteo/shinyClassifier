@@ -5,13 +5,14 @@ user:
   - user: admin
     password: admin
     admin: true
-  - user: test
-    password: test
+  - user: john
+    password: john
     admin: false
 type: image #text or image
 question:
   - text: Is there a cat? #what the user sees
-    value: cat #name of question, will become the column name in the classification results
+    value: cat #name of question, will become the column name in classification result
+    type: radio #type of control element: radio (exclusive), checkbox (multiple), or selectize (exclusive/multiple)
     choice:
       - name: "Yes" #what the user sees
         value: 1 #value to be recorded
@@ -20,6 +21,8 @@ question:
         value: 0
         keycode: 78
   - text: If there is, what is its colour?
+    type: selectize
+    multiple: true #whether answers are exclusive or multiple, only applicable for selectize, default to exclusive if unspecified
     value: color
     choice:
       - name: Not Applicable

@@ -29,9 +29,7 @@ function(session, input, output) {
       if (file.exists(data_file)) {
         data <- readRDS(data_file)
         # find out which content to load first
-        session_info$current <- ifelse(
-          any(which(data$completed)), min(any(which(data$completed))), 1
-        )
+        session_info$current <- ifelse(any(data$completed), max(which(data$completed)) + 1, 1)
         # draw navigation bar
         output$nav <- renderUI({
           if (session_info$current > 1) {
@@ -190,6 +188,7 @@ function(session, input, output) {
         box(
           column(
             tags$div(class = "nav", selectInput("user", "Select user:", non_admin, width = "110px")),
+            htmlOutput("progress"),
             width = 12, align = "center"
           ),
           width = 12
@@ -199,16 +198,21 @@ function(session, input, output) {
       output$data <- renderUI({
         box(
           dataTableOutput("result"),
-          width = 12
+          style = "overflow-x: scroll;", width = 12
         )
       })
       observeEvent(input$user, {
         removeUI(selector = "#questions > .col-sm-12", multiple = TRUE)
         data_file <- paste0("data_", input$user, ".rds")
         if (file.exists(data_file)) {
+          data <- readRDS(data_file)
+          # update progress
+          output$progress <- renderText({
+            sprintf("%i out of %i completed</br>Last access: %s", 
+                    sum(data$completed),  nrow(data), file.info(data_file)$ctime)
+          })
           # render table
           output$result <- renderDataTable({
-            data <- readRDS(data_file)
             if (type == "image")
               data$data <- paste0("<a href='", data$data, "' target='_blank'><img src='",
                                   data$data, "' class='table-thumbnail'/></a>")

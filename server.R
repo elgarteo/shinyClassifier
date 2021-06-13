@@ -29,7 +29,9 @@ function(session, input, output) {
       if (file.exists(data_file)) {
         data <- readRDS(data_file)
         # find out which content to load first
-        session_info$current <- ifelse(any(data$completed), max(which(data$completed)) + 1, 1)
+        session_info$current <- ifelse(!any(data$completed), 1,
+                                       ifelse(max(which(data$completed)) != nrow(data),
+                                              max(which(data$completed)) + 1, max(which(data$completed))))
         # draw navigation bar
         output$nav <- renderUI({
           if (session_info$current > 1) {
@@ -141,9 +143,38 @@ function(session, input, output) {
             # til end and unfinished
             showModal(modalDialog(
               title = "Warning",
-              "You have not finished classifying all the content. Please check again.",
+              p("You have not finished classifying all the content. Please check the following item(s):"),
+              p(paste0(which(!data$completed), collapse = ", ")),
               easyClose = TRUE, footer = NULL
             ))
+          }
+        })
+        # go to dialog
+        output$goto_btn <- renderText({
+          "Go to..."
+        })
+        observeEvent(input$show_goto, {
+          showModal(modalDialog(
+            style = "text-align: center;",
+            tags$div(style = "display: inline-block; vertical-align: top;",
+                     textInput("goto_n", NULL, placeholder = "Jump to item #", width = "130px")),
+            tags$div(style = "display: inline-block; vertical-align: top;",
+                     tags$button(id = "goto", tags$i(class = "fa fa-arrow-right"),
+                                 class = "btn action-button btn-success shiny-bound-input")),
+            easyClose = TRUE, title = NULL, footer = NULL, size = "s"
+          ))
+        })
+        observeEvent(input$goto, {
+          target <- as.numeric(input$goto_n)
+          if (is.na(target) | is.null(target) | target < 1 | target > nrow(data)) {
+            showModal(modalDialog(
+              title = "Error",
+              "Invalid number.",
+              easyClose = TRUE, footer = NULL, size = "s"
+            ))
+          } else {
+            removeModal()
+            session_info$current <- target
           }
         })
         # monitor key press

@@ -7,11 +7,9 @@ load("config.rda")
 
 header <- dashboardHeader(
   title = title,
-  tags$li(
-    class = "dropdown",
-    tags$li(class = "dropdown", uiOutput("logged_user")),
-    tags$li(class = "dropdown", actionLink("logout", "Logout"))
-  )
+  tags$li(class = "dropdown", actionLink("show_goto", textOutput("goto_btn"))),
+  tags$li(class = "dropdown", uiOutput("logged_user")),
+  tags$li(class = "dropdown", actionLink("logout", "Logout"))
 )
 sidebar <- dashboardSidebar(disable = TRUE)
 body <- dashboardBody(

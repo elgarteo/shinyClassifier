@@ -91,7 +91,7 @@ prep_data <- function(file = "data.csv", dist = TRUE) {
   users <- read_db_decrypt("user.sqlite")
   non_admin <- users[users$admin == "FALSE", ]
   # add choice columns
-  result <- as.data.frame(matrix(NA, norw(data), length(questions)))
+  result <- as.data.frame(matrix(NA, nrow(data), length(questions)))
   names(result) <- map_chr(questions, function(x) x$value)
   result <- cbind(data, result)
   # add problem & completed columns
